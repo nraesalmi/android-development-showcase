@@ -86,8 +86,12 @@ import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberImagePainter
 
 data class Message(val author: String, val body: String)
+data class User(var username: String, var profilePhotoUri: Uri?)
 
 val randomProfilePictures = listOf(
     R.drawable.lataus,
@@ -143,6 +147,26 @@ val randomFunFacts = listOf(
 )
 
 
+@Composable
+fun ClickableImageButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    painter: Painter,
+    contentDescription: String
+) {
+    Image(
+        painter = painter,
+        contentDescription = contentDescription,
+        modifier = modifier
+            .clickable { onClick() }
+            .padding(8.dp)
+
+    )
+}
+
+class UserViewModel : ViewModel() {
+    var user = mutableStateOf(User("Username", null))
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -179,7 +203,8 @@ fun MyAppNavHost(
 
 @Composable
 fun MainScreen(navController: NavHostController) {
-    val background = painterResource(R.drawable.solid_mid_grey)
+    val viewModel: UserViewModel = viewModel()
+    val background = painterResource(R.drawable.wavebackground)
     val lightBulbIcon = painterResource(id = R.drawable.lightbulb)
     var buttonClicked by remember { mutableStateOf(false) }
     var isEditing by remember { mutableStateOf(false) }
@@ -209,7 +234,8 @@ fun MainScreen(navController: NavHostController) {
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(MaterialTheme.shapes.medium)
-                    .scale(1.0f, scaleY = 2.2f)
+                    .scale(2.0f)
+                    .absoluteOffset(y = (120).dp)
             )
 
             Box(
@@ -235,7 +261,7 @@ fun MainScreen(navController: NavHostController) {
                         placeholder = painterResource(R.drawable.no_profile_photo),
                         contentDescription = null,
                         modifier = Modifier
-                            .size(80.dp)
+                            .size(75.dp)
                             .clip(CircleShape),
                         contentScale = ContentScale.Crop
                     )
@@ -244,9 +270,10 @@ fun MainScreen(navController: NavHostController) {
 
                     if (isEditing) {
                         TextField(
-                            value = username,
-                            onValueChange = {
-                                username = it
+                            value = viewModel.user.value.username,
+                            onValueChange = { newUsername ->
+                                val newUser = viewModel.user.value.copy(username = newUsername)
+                                viewModel.user.value = newUser
                             },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions.Default.copy(
@@ -277,6 +304,16 @@ fun MainScreen(navController: NavHostController) {
                     ) {
                         Text(text = "Pick Photo")
                     }
+                    val pickMedia =
+                        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+                            if (uri != null) {
+                                Log.d("PhotoPicker", "Selected URI: $uri")
+                                val newUser = viewModel.user.value.copy(profilePhotoUri = uri)
+                                viewModel.user.value = newUser
+                            } else {
+                                Log.d("PhotoPicker", "No media selected")
+                            }
+                        }
                 }
             }
 
@@ -385,23 +422,6 @@ fun MessageCard(msg: Message, profilePicture: Int) {
             }
         }
     }
-}
-
-@Composable
-fun ClickableImageButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    painter: Painter,
-    contentDescription: String
-) {
-    Image(
-        painter = painter,
-        contentDescription = contentDescription,
-        modifier = modifier
-            .clickable { onClick() }
-            .padding(8.dp)
-
-    )
 }
 
 
