@@ -16,13 +16,21 @@
 
 package com.example.composetutorial
 
+import android.annotation.SuppressLint
+import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -78,6 +86,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
@@ -283,13 +293,46 @@ fun TemperatureDependentLight() {
         )
     }
 }
+class NotificationReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        showNotification(context)
+    }
 
+    @SuppressLint("MissingPermission")
+    private fun showNotification(context: Context) {
+        val mainActivityIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+
+        val mainActivityPendingIntent: PendingIntent by lazy {
+            PendingIntent.getActivity(
+                context, 0, mainActivityIntent, PendingIntent.FLAG_IMMUTABLE
+            )
+        }
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.lightbulb)
+            .setContentTitle("App notification")
+            .setContentText("Click to open app.")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(mainActivityPendingIntent)
+            .setAutoCancel(true)
+
+        with(NotificationManagerCompat.from(context)) {
+            notify(NOTIFICATION_ID, builder.build())
+        }
+    }
+}
+
+private const val CHANNEL_ID = "channel1"
+private const val NOTIFICATION_ID = 1
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val sharedPreferences = getSharedPreferences("user_data", Context.MODE_PRIVATE)
         val viewModel: UserViewModel = ViewModelProvider(this, UserViewModelFactory(sharedPreferences)).get(UserViewModel::class.java)
+
         setContent {
             ComposeTutorialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
@@ -297,6 +340,37 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        // Create notification channel
+        createNotificationChannel()
+
+        // Schedule periodic notification
+        schedulePeriodicNotification()
+    }
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = getString(R.string.channel_name)
+            val descriptionText = getString(R.string.channel_description)
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    // Function to schedule periodic notifications
+    @SuppressLint("ServiceCast")
+    private fun schedulePeriodicNotification() {
+        val notificationIntent = Intent(this, NotificationReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent,
+            PendingIntent.FLAG_IMMUTABLE)
+
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val interval = 10 * 1000
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval.toLong(), pendingIntent)
     }
 }
 
@@ -476,7 +550,7 @@ fun MainScreen(navController: NavHostController, viewModel: UserViewModel) {
                     .padding(30.dp)
             ) {
                 Text(
-                    text = "View fun facts!",
+                    text = "Open Innovation Lab!",
                     fontSize = 17.sp
                 )
             }
