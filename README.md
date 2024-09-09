@@ -3,8 +3,9 @@ Niklas Raesalmi
 
 ## Final Project
 My project is a camera app that uses an integrated camera feature and stores the taken photos with the timestamp and the name and profile photo of the user in its gallery. There is also a feature to turn the camera around and switch back and forth between the back and front cameras. I used the layout from my previous homework projects for the top bar and selecting the profile photo and name, and I followed a tutorial on how to implement CameraX into the app. I used Icons for the camera buttons for easier readability and picked a square box for the “Take photo” feature and placed it in the center at the bottom. Next to it for easy access I placed the gallery button and clicking it opens a drawer with the photos at the bottom. At the left top corner under the profile button is the change cameras button to balance out the camera section of the screen.
-I feel like I was able to implement everything as I wanted but adding the timestamps proved to be a little difficult with the way the app was laid out. Luckily I managed to find a proper solution to make it work sufficiently.
-For the code I used Android Jetpack Components, Compose UI Toolkit for the layout, CameraX API for the camera functionalities, Coil Image Loading Library for the asynchronous image loading and Bitmaps for the image storing and processing, file operations for copying images to app storage and URIs for representing resource identifiers. The app seems to work well, although switching profile photos requires a restart after the first time.
+
+I feel like I was able to implement everything as I wanted but adding the timestamps proved to be a little difficult with the way the app was laid out. Luckily I managed to find a proper solution to make it work sufficiently. For the code I used Android Jetpack Components, Compose UI Toolkit for the layout, CameraX API for the camera functionalities, Coil Image Loading Library for the asynchronous image loading and Bitmaps for the image storing and processing, file operations for copying images to app storage and URIs for representing resource identifiers. The app seems to work well, although switching profile photos requires a restart after the first time.
+
 The app could be better by making it a diary app for example, after taking a photo it could ask “What’s on your mind?” and add it with the photo into the gallery. Also the entries should be saved into the device memory for later viewing and the gallery should be made easier to read if there were to be more entries.
 
 ![Final project Demo](final-project/Final_project_demo_video.webm)
@@ -21,6 +22,7 @@ I first got picking an image working by using the pickMedia photo picker and fol
 
 ## Homework 2
 The most important part for implementing navigation is setting up a NavHost that keeps track of the page that you're currently on and where each button leads to.
+
 I got the navigation working by first setting both pages into the NavHost and then for the buttons I used navController.navigate() and put the page that the button should lead to into the parenthesis. To prevent circular navigation, instead of the back button on the message page leading back to the main screen I instead used navController.popBackStack() to go back one page.
 
 ![Homework 2 Demo](homework-2/Screen_recording_20240128_195709.webm)
