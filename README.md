@@ -1,4 +1,4 @@
-# Mobile Computing
+# Mobile Computing Coursework
 Niklas Raesalmi
 
 ## Final Project
