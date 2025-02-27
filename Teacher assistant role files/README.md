@@ -1,6 +1,6 @@
-### Mobile Computing -course exercise session materials, by Niklas Raesalmi
+# Mobile Computing -course exercise session materials, by Niklas Raesalmi
 
-### Homework 3
+## Homework 3
 [![Homework 3 Demo](https://img.youtube.com/vi/IM3HtKzRCjg/0.jpg)](https://www.youtube.com/shorts/IM3HtKzRCjg)
 
 ## Homework 3 Instructions:
